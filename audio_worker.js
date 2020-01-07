@@ -44,11 +44,19 @@ onmessage = function({data}) {
 
 let num = 0; // DELETE ME
 
-// Collect new data point
+// Collect data points
 function collect({data}) {
   detectPeaks(data);
-  if (bufferIdx === bufferOct.length)
+  if (bufferIdx >= bufferOct.length)
     finalizeBuffer();
+}
+
+// Functions for working with frequency space
+function freqIndex(f) {
+  return parseInt((f + settings.hzPerBin/2) / settings.hzPerBin);
+};
+function indexFreq(i) {
+  return settings.hzPerBin * i - settings.hzPerBin/2;
 }
 
 // Edge detection algorithm - sketch (SINGLE CHORD, 1s timeout)
@@ -135,20 +143,27 @@ function finalizeBuffer() {
     }
   }
 
-  const res = [];
-  for (const [n, pow] of powers)
-    res.push([noteName(n), n, pow]);
-
   let avg = 0;
-  for (let i = 0; i < res.length; i ++)
-    avg += Math.pow(res[i][2], 2); // raised to 2nd /!\
-  avg /= res.length;
+  for (const [, pow] of powers)
+    avg += Math.pow(pow, 2); // raised to 2nd /!\
+  avg /= powers.size;
 
-  if (avg > 10_000) {
+  if (avg > 10_000) { // *magic number*
     // Accept chord
-    console.log(avg);
-    console.log("RAW:", res);
-    console.log(res.filter(([,,pow]) => Math.pow(pow, 2) > avg));
+    const chord = [];
+    for (const [n, pow] of powers)
+      if (Math.pow(pow, 2) > avg)
+        chord.push(n);
+    postMessage(analyzeChord(chord));
+
+    // DEBUG: Delete me later (!)
+    const debug_chord = [];
+    for (const [n, pow] of powers)
+      if (Math.pow(pow, 2) > avg)
+        debug_chord.push({ n, pow });
+    console.log("DEBUG - chord recorded:", debug_chord.map(c => {
+      return {debugName: debugName(c.n), ...c};
+    }));
   }
 
   clearBuffer();
@@ -172,63 +187,7 @@ finalizeBuffer._power_map = new Map();
 //
 // however, the above algorithm seems to be a good first draft
 
-// Random stuff from before
-// (some this analysis might be moved to C once it works ...)
-
-function freqIndex(f) {
-  return parseInt((f + settings.hzPerBin/2) / settings.hzPerBin);
-};
-function indexFreq(i) {
-  return settings.hzPerBin * i - settings.hzPerBin/2;
-}
-
-// Use double average as thresh-hold
-// This gives reasonable results so far ...
-function _____getPeaks(buffer) {
-  let peaks = [];
-  let avg = buffer[0] + buffer[buffer.length-1];
-
-  // Get peaks that are notes and average peak
-  for (let i = 1, max = buffer.length-1; i < max; i ++) {
-    if (settings.isNote[i] && buffer[i] > minPower && buffer[i-1] < buffer[i] && buffer[i] > buffer[i+1])
-      peaks.push(i);
-    avg += buffer[i];
-  }
-  avg /= buffer.length;
-
-  // Select those notes which have more than average power
-  peaks = peaks.filter(i => buffer[i] > avg);
-
-  // Select those peaks which higher than average peak amongst the peaks themselves
-  avg = 0;
-  for (let i of peaks)
-    avg += buffer[i];
-  avg /= peaks.length;
-  peaks = peaks.filter(i => buffer[i] > avg);
-
-  return removeOvertones(buffer, peaks);
-}
-
-// Remove overtones from peaks list
-// this is quite slow at the moment...
-// -> removes any notes played with non-max power
-const _removeOvertones_map = new Map();
-const _removeOvertones_res = new Set();
-function ______removeOvertones(buffer, peaks) {
-  const res = _removeOvertones_res;
-  const seen = _removeOvertones_map;
-  seen.clear();
-  res.clear();
-  for (let i = 0; i < peaks.length; i ++) {
-    // make this better ...
-    const n = (120 + settings.notes[peaks[i]]) % 12;
-    if (seen.has(n) && seen.get(n) > buffer[peaks[i]])
-      continue;
-    seen.set(n, buffer[peaks[i]]);
-    res.add(peaks[i]);
-  }
-  return [...res];
-}
+// Music Theory stuff
 
 // Frequency of note, where n is number
 // of half-tone steps between A_4 and the
@@ -241,9 +200,65 @@ function noteFreq(n) {
   return 440 * Math.pow(2, n/12);
 }
 
-// Ahrg, I'm going crazy ...
-function noteName(n) {
-  const octave = (n >= 0 ? parseInt(Math.abs(n) / 12) : -1 - parseInt(Math.abs(n) / 12)) + 4;
+// Build a chord object from a
+// raw chord array (containing
+// only the n representations of
+// each note played)
+function analyzeChord(raw) {
+  let key = null;
+  raw.sort((a, b) => a - b);
+  // Get key
+  if (raw.length === 3) {
+    const a = raw[1] - raw[0],
+          b = raw[2] - raw[1];
+    if (a === 3 && b === 4) {
+      key = "minor";
+    } else if (a === 4 && b === 3) {
+      key = "major";
+    }
+  }
+  // Name the items. We use the following naming
+  // strategy: maximize alphabetical distance
+  // from lowest note.
+  //
+  // Name values: A -> 0, B -> 1, ..., G -> 6
+  // Modifier values: -1 -> b (flat), 0 -> [none], +1 -> # (sharp)
+  const names = [];
+  const modifiers = [];
+  const octaves = [];
+  const map = [
+    [[0, 0]], // A
+    [[0, 1], [1, -1]], // #A or bB
+    [[1, 0]], // B
+    [[2, 0]], // C
+    [[2, 1], [3, -1]], // #C or bD
+    [[3, 0]], // D
+    [[3, 1], [4, -1]], // #D or bE
+    [[4, 0]], // E
+    [[5, 0]], // F
+    [[5, 1], [6, -1]], // #F or bG
+    [[6, 0]], // G
+    [[6, 1], [0, -1]], // #G or bA
+  ];
+  for (let i = 0; i < raw.length; i ++) {
+    const n = raw[i];
+    let pair = map[(120 + n) % 12];
+    if (pair.length > 1) {
+      pair = pair[i > 0 ? 1 : 0];
+    } else {
+      pair = pair[0];
+    }
+
+    names.push(pair[0]);
+    modifiers.push(pair[1]);
+    octaves.push((n >= 0 ? parseInt(n / 12) : parseInt(n / 12) - 1) + 4);
+  }
+  return {raw, key, names, modifiers, octaves};
+}
+
+// Debug name of note. Used for debugging.
+function debugName(n) {
+  const octave = (n >= 0 ? parseInt(n / 12) : parseInt(n / 12) - 1) + 4;
   // note from friend: seems like it will 'look good' if we maximize distance from lower note
   //                   in letter system (?) but in principle, no right/wrong for single note
   const letters = ['A','#A','B','C','#C','D','#D','E','F','#F','G','#G'];
