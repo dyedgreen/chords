@@ -1,0 +1,5 @@
+# NPM Garbage
+node_modules
+
+# Test/ WIP/ Tweaking data stuff
+*.test

@@ -148,7 +148,7 @@ function finalizeBuffer() {
     avg += Math.pow(pow, 2); // raised to 2nd /!\
   avg /= powers.size;
 
-  if (avg > 10_000) { // *magic number*
+  if (avg > 10000) { // *magic number*
     // Accept chord
     const chord = [];
     for (const [n, pow] of powers)
@@ -221,24 +221,24 @@ function analyzeChord(raw) {
   // strategy: maximize alphabetical distance
   // from lowest note.
   //
-  // Name values: A -> 0, B -> 1, ..., G -> 6
+  // Name values: C -> 0, D -> 1, ..., B -> 6
   // Modifier values: -1 -> b (flat), 0 -> [none], +1 -> # (sharp)
   const names = [];
   const modifiers = [];
   const octaves = [];
   const map = [
-    [[0, 0]], // A
-    [[0, 1], [1, -1]], // #A or bB
-    [[1, 0]], // B
-    [[2, 0]], // C
-    [[2, 1], [3, -1]], // #C or bD
-    [[3, 0]], // D
-    [[3, 1], [4, -1]], // #D or bE
-    [[4, 0]], // E
-    [[5, 0]], // F
-    [[5, 1], [6, -1]], // #F or bG
-    [[6, 0]], // G
-    [[6, 1], [0, -1]], // #G or bA
+    [[5, 0]], // A
+    [[5, 1], [6, -1]], // #A or bB
+    [[6, 0]], // B
+    [[0, 0]], // C
+    [[0, 1], [1, -1]], // #C or bD
+    [[1, 0]], // D
+    [[1, 1], [2, -1]], // #D or bE
+    [[2, 0]], // E
+    [[3, 0]], // F
+    [[3, 1], [4, -1]], // #F or bG
+    [[4, 0]], // G
+    [[4, 1], [5, -1]], // #G or bA
   ];
   for (let i = 0; i < raw.length; i ++) {
     const n = raw[i];
@@ -251,17 +251,28 @@ function analyzeChord(raw) {
 
     names.push(pair[0]);
     modifiers.push(pair[1]);
-    octaves.push((n >= 0 ? parseInt(n / 12) : parseInt(n / 12) - 1) + 4);
+    octaves.push((n >= 0 ? Math.floor((n-3) / 12) : Math.ceil((3-n) / 12)) + 2); // 2 corrects for bad script :/
   }
   return {raw, key, names, modifiers, octaves};
 }
 
 // Debug name of note. Used for debugging.
 function debugName(n) {
-  const octave = (n >= 0 ? parseInt(n / 12) : parseInt(n / 12) - 1) + 4;
+  const octave = (n >= 0 ? Math.floor((n-3) / 12) : Math.ceil((3-n) / 12)) + 2;
   // note from friend: seems like it will 'look good' if we maximize distance from lower note
   //                   in letter system (?) but in principle, no right/wrong for single note
   const letters = ['A','#A','B','C','#C','D','#D','E','F','#F','G','#G'];
   // min n is -5*12
   return `${letters[(5*12+n)%12]} (${octave})`;
 }
+
+// TODO: Delete
+setInterval(() => {
+  const raw = [];
+  let start = -9 + Math.floor(Math.random()*10-5);
+  for (let i = 0; i < 3; i ++) {
+    raw.push(start);
+    start += Math.floor(Math.random()*3 + 1);
+  }
+  //postMessage(analyzeChord(raw));
+}, 5000);

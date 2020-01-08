@@ -1,4 +1,44 @@
-<script type="text/javascript" src="audio.js">
-</script>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link href="./assets/app.css" rel="stylesheet" type="style/css" >
+    <title>Chords</title>
+  </head>
+  <body>
+    <canvas id="bg"></canvas>
 
-<h1>Hello There!</h1>
+    <div class="header">
+      <h1 class="logo">Chords</h1>
+      <a id="btn-help" class="button" href="javascript:void(0)">Help & About</a>
+    </div>
+
+    <!-- TODO: pulsing background ... -->
+
+    <div id="" class="view">
+
+      <div id="view-start" class="card">
+        <img class="hero" src="./assets/tape.svg">
+        <h1>Start Recording</h1>
+        <p>To recognize chords, we need to record some audio!</p>
+        <a id="btn-start" class="button primary" href="javascript:void(0)">Enable Microphone</a>
+      </div>
+
+      <div id="view-chord" class="card hidden">
+        <span id="chord-render"></span>
+        <p id="chord-info">...</p>
+      </div>
+
+      <div id="view-help" class="card full hidden">
+        <img class="hero" src="./assets/piano.svg">
+        <h1>Help</h1>
+        <p>Write some stuff here.</p>
+        <h1>About</h1>
+        <p>Write some stuff here.</p>
+      </div>
+
+    </div>
+
+  </body>
+  <script type="module" src="./src/app.js"></script>
+</html>
