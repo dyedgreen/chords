@@ -2,6 +2,12 @@
 
 console.log("Audio worker started");
 
+const takes = 20;
+const data_buf = [];
+function takeData() {
+  console.log(data_buf.map(arr => arr.join(",")).join("\n"));
+}
+
 const minNote    = -22; // smallest note with unique bin
 const maxNote    = 88-5*12; // highest key on piano
 const minPower   = 30; // check what is good ...
@@ -46,6 +52,15 @@ let num = 0; // DELETE ME
 
 // Collect data points
 function collect({data}) {
+  if (num++ > 10 && data_buf.length < takes) {
+    console.log("taking data", num, data_buf.length);
+    data_buf.push(data);
+    if (data_buf.length === takes) {
+      takeData();
+    }
+  } else if (num <= 10) {
+    console.log("waiting:", num);
+  }
   detectPeaks(data);
   if (bufferIdx >= bufferOct.length)
     finalizeBuffer();
@@ -251,14 +266,14 @@ function analyzeChord(raw) {
 
     names.push(pair[0]);
     modifiers.push(pair[1]);
-    octaves.push((n >= 0 ? Math.floor((n-3) / 12) : Math.ceil((3-n) / 12)) + 2); // 2 corrects for bad script :/
+    octaves.push((n >= 0 ? Math.floor((n-3) / 12) : Math.ceil((3-n) / 12)) + 3);
   }
   return {raw, key, names, modifiers, octaves};
 }
 
 // Debug name of note. Used for debugging.
 function debugName(n) {
-  const octave = (n >= 0 ? Math.floor((n-3) / 12) : Math.ceil((3-n) / 12)) + 2;
+  const octave = (n >= 0 ? Math.floor((n-3) / 12) : Math.ceil((3-n) / 12)) + 3;
   // note from friend: seems like it will 'look good' if we maximize distance from lower note
   //                   in letter system (?) but in principle, no right/wrong for single note
   const letters = ['A','#A','B','C','#C','D','#D','E','F','#F','G','#G'];
@@ -266,13 +281,13 @@ function debugName(n) {
   return `${letters[(5*12+n)%12]} (${octave})`;
 }
 
-// TODO: Delete
-setInterval(() => {
-  const raw = [];
-  let start = -9 + Math.floor(Math.random()*10-5);
-  for (let i = 0; i < 3; i ++) {
-    raw.push(start);
-    start += Math.floor(Math.random()*3 + 1);
-  }
-  //postMessage(analyzeChord(raw));
-}, 5000);
+// // TODO: Delete
+// setInterval(() => {
+//   const raw = [];
+//   let start = -9 + Math.floor(Math.random()*10-5);
+//   for (let i = 0; i < 3; i ++) {
+//     raw.push(start);
+//     start += Math.floor(Math.random()*3 + 1);
+//   }
+//   //postMessage(analyzeChord(raw));
+// }, 5000);

@@ -9,7 +9,7 @@
     <canvas id="bg"></canvas>
 
     <div class="header">
-      <h1 class="logo">Chords</h1>
+      <h1 class="logo"><img src="./assets/piano-white.svg">Chords</h1>
       <a id="btn-help" class="button" href="javascript:void(0)">Help & About</a>
     </div>
 
@@ -22,6 +22,16 @@
         <h1>Start Recording</h1>
         <p>To recognize chords, we need to record some audio!</p>
         <a id="btn-start" class="button primary" href="javascript:void(0)">Enable Microphone</a>
+      </div>
+
+      <div id="view-error" class="card hidden">
+        <img class="hero" src="./assets/no-mic.svg">
+        <h1>Could not Start Recording</h1>
+        <p>
+          It seems like you have no microphone available. If you denied permission,
+          try refreshing the page. None of the recordings are sent or stored anywhere. Promise.
+        </p>
+        <a class="button" href="javascript:location.reload()">Refresh Page</a>
       </div>
 
       <div id="view-chord" class="card hidden">

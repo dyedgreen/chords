@@ -1,5 +1,8 @@
 # NPM Garbage
 node_modules
 
+# Data Analysis
+analysis
+
 # Test/ WIP/ Tweaking data stuff
 *.test

@@ -4,7 +4,7 @@
   --color-bg: #EFF6F9;
   --color-main: #0AD1BD;
 
-  --header-height: 75px;
+  --header-height: 100px;
 }
 
 html, body {
@@ -24,16 +24,21 @@ html, body {
 .header {
   width: 100%;
   height: var(--header-height);
-  padding: 25px 25px 0 25px;
+  padding: 25px;
   display: flex;
   justify-content: space-between;
 }
 
 .header .logo {
   font-size: 40px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--color-bg);
+}
+.header .logo img {
+  height: 50px;
+  margin: 0 15px 0 0;
+  vertical-align: top;
 }
 
 /* views and cards */

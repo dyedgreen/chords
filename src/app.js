@@ -4,6 +4,7 @@ const chordRender = document.getElementById("chord-render");
 const chordInfo = document.getElementById("chord-info");
 
 const viewStart = document.getElementById("view-start");
+const viewError = document.getElementById("view-error");
 const viewChord = document.getElementById("view-chord");
 const viewHelp = document.getElementById("view-help");
 
@@ -22,7 +23,8 @@ document.getElementById("btn-start").addEventListener("click", () => {
   })
   .catch(() => {
     // Access rejected or no audio input available
-    alert("TODO: Have a sad state. Microphone not accessible.");
+    viewStart.classList.add("hidden");
+    viewError.classList.remove("hidden");
   });
 });
 
