@@ -50,9 +50,8 @@ export class AudioAnalyzer {
     // Send settings to worker
     const worker = new Worker("./worker/audio.js");
     worker.postMessage({
-      timeStep,
       hzPerBin,
-      frequencyBinCount: buffer.length,
+      frequencyBinCount: fft.frequencyBinCount,
     });
 
     // This is called when we have a new FFT frame available

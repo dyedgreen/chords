@@ -9,13 +9,21 @@
     <canvas id="bg"></canvas>
 
     <div class="header">
-      <h1 class="logo"><img src="./assets/piano-white.svg">Chords</h1>
+      <h1 class="logo"><img src="./assets/piano.svg">Chords</h1>
       <a id="btn-help" class="button" href="javascript:void(0)">Help & About</a>
     </div>
 
     <!-- TODO: pulsing background ... -->
 
     <div id="" class="view">
+
+      <div id="view-help" class="card full hidden">
+        <img class="hero" src="./assets/piano.svg">
+        <h1>Help</h1>
+        <p>Write some stuff here.</p>
+        <h1>About</h1>
+        <p>Write some stuff here.</p>
+      </div>
 
       <div id="view-start" class="card">
         <img class="hero" src="./assets/tape.svg">
@@ -37,14 +45,6 @@
       <div id="view-chord" class="card hidden">
         <span id="chord-render"></span>
         <p id="chord-info">...</p>
-      </div>
-
-      <div id="view-help" class="card full hidden">
-        <img class="hero" src="./assets/piano.svg">
-        <h1>Help</h1>
-        <p>Write some stuff here.</p>
-        <h1>About</h1>
-        <p>Write some stuff here.</p>
       </div>
 
     </div>
