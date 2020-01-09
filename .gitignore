@@ -2,7 +2,7 @@
 node_modules
 
 # Data Analysis
-analysis
+analysis/.ipynb_checkpoints
 
 # Test/ WIP/ Tweaking data stuff
 *.test
