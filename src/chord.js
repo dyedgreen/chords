@@ -6,11 +6,11 @@ export class Chord {
     // {raw, key, names, modifiers, octaves}
     this.raw = raw;
     this.raw.sort((a, b) => a-b);
-    // TODO: Do chord analysis
-    // this.key = key;
-    // this._names = names;
-    // this._modifiers = modifiers;
-    // this._octaves = octaves;
+    const { key, names, modifiers, octaves } = processRaw(this.raw);
+    this.key = key;
+    this.names = names;
+    this.modifiers = modifiers;
+    this.octaves = octaves;
   }
 
   get length() {
@@ -19,37 +19,23 @@ export class Chord {
 
   // Return human readable name of chord
   get name() {
-    if (this.key) {
-      let name = "CDEFGAB"[this._names[0]];
-      if (this._modifiers[0] === +1)
-        name = "#" + name;
-      if (this._modifiers[0] === -1)
-        name = "b" + name;
-      return `${name} ${this.key}`;
-    }
-    return this.notes.join(", ");
-  }
-
-  // Return human readable strings for each note component
-  get notes() {
-    const names = "CDEFGAB";
-    const chord = [];
-    for (let i = 0; i < this._names.length; i ++) {
-      let mod = "";
-      if (this._modifiers[i] === +1)
-        mod = "#";
-      if (this._modifiers[i] === -1)
-        mod = "b";
-      chord.push(`${mod}${names[this._names[i]]} (${this._octaves[i]})`);
-    }
-    return chord;
+    return "TODO!";
+    // if (this.key) {
+    //   let name = "CDEFGAB"[this._names[0]];
+    //   if (this._modifiers[0] === +1)
+    //     name = "#" + name;
+    //   if (this._modifiers[0] === -1)
+    //     name = "b" + name;
+    //   return `${name} ${this.key}`;
+    // }
+    // return this.notes.join(", ");
   }
 
   // Render an SVG of the chord
-  get svg() {
-    const names = this._names,
-          modifiers = this._modifiers,
-          octaves = this._octaves;
+  svg() {
+    const names = this.names,
+          modifiers = this.modifiers,
+          octaves = this.octaves;
 
     const fragments = [];
 
@@ -82,7 +68,7 @@ export class Chord {
         fragments.push(`<use y="${y}" x="${modOff}" fill="#000000" fill-rule="evenodd" xlink:href="#sharp"></use>`);
       if (modifiers[i] === -1)
         fragments.push(`<use y="${y}" x="${modOff}" fill="#000000" fill-rule="evenodd" xlink:href="#flat"></use>`);
-      if (modifiers[i] !== 0) {
+      if (modifiers[i] !== 0 && modCount < 2) {
         modCount ++;
       } else {
         modCount = 0;
@@ -113,7 +99,7 @@ export class Chord {
     }
 
     // Return notes SVG embedded in decoration
-    // TODO: automatically adjust render box
+    // TODO: automatically adjust size of render box
     return `<?xml version="1.0" encoding="UTF-8"?>
       <svg width="230px" height="360px" viewBox="0 0 200 360" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <!-- Generator: chords -->
@@ -133,4 +119,80 @@ export class Chord {
       </svg>`;
   }
 
+}
+
+// Mapping from note half-tone
+// relative to start (C) of octave
+// to possible notes
+const nameMap = [
+  [0], // C
+  [0, 1], // #C or bD
+  [1], // D
+  [1, 2], // #D or bE
+  [2], // E
+  [3], // F
+  [3, 4], // #F or bG
+  [4], // G
+  [4, 5], // #G or bA
+  [5], // A
+  [5, 6], // #A or bB
+  [6], // B
+  // Omit bC, as that is subtle with respect to octaves ...
+];
+
+// Process raw chord data (given in half-tone)
+// distance from A_4 e.g. C_4 -> -9
+// Raw is expected to be sorted ascending, such
+// that the resulting arrays are sorted in a sensible
+// was. (i.e. work with the SVG renderer)
+function processRaw(raw) {
+  const offset    = -9; // C4
+  const names     = new Array(raw.length); // Letter name of note (C=0, D=1, ... B=6)
+  const modifiers = new Array(raw.length); // Half-tone modification (-1 -> flat, 0 -> <none>, +1 -> sharp)
+  const octaves   = new Array(raw.length); // Octaves for each note
+  let   key       = null;
+
+  // Determine key
+  if (raw.length === 3) {
+    // TODO: Add more (fancy) keys here ...
+    // TODO: Recognize keys which might be in incorrect order ...
+    if (raw[1] - raw[0] === 4 && raw[2] - raw[1] === 3)
+      key = "major";
+    if (raw[1] - raw[0] === 3 && raw[2] - raw[1] === 4)
+      key = "minor";
+  }
+
+  // Take raw n and return octave
+  const getOct = n => {
+    const m = n - offset;
+    return (m >= 0 ? Math.floor(m / 12) : -Math.ceil(-m / 12)) + 4;
+  }
+  const getTone = n => {
+    const m = n - offset;
+    return (120 + m) % 12; // -120 is lower than the lowest note on piano
+  };
+
+  // Name-finding strategy:
+  // Greedily pick the lower one, if there is at
+  // least one note gap between it and the previous
+  let prev = -Infinity;
+  for (let i = 0; i < raw.length; i ++) {
+    const tone = getTone(raw[i]);
+    if (nameMap[tone].length === 1) {
+      names[i] = nameMap[tone][0];
+      modifiers[i] = 0;
+    } else {
+      const [sharp, flat] = nameMap[tone];
+      if (i === 0 || raw[i] - raw[i-1] >= 4) {
+        names[i] = sharp;
+        modifiers[i] = +1;
+      } else {
+        names[i] = flat;
+        modifiers[i] = -1;
+      }
+    }
+    octaves[i] = getOct(raw[i]);
+  }
+
+  return { key, names, modifiers, octaves };
 }

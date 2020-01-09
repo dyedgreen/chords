@@ -14,6 +14,10 @@ html, body {
   background: var(--color-bg-dark);
 }
 
+a {
+  color: var(--color-main);
+}
+
 * {
   padding: 0;
   margin: 0;

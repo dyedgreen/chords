@@ -16,8 +16,7 @@ document.getElementById("btn-start").addEventListener("click", () => {
     viewChord.classList.remove("hidden");
     // Display recognized chords
     analyzer.onchord = chord => {
-      // TODO: Delete
-      chordRender.innerHTML = chord.svg;
+      chordRender.innerHTML = chord.svg();
       chordInfo.innerHTML = chord.name;
     };
   })

@@ -6,7 +6,7 @@ const minNote = -15; // smallest note we are happy to recognize
 const maxNote = 88-5*12; // highest key on piano
 const bufferSize = 3; // # of frames in a detection buffer
 
-const threshold = 0.9; // probability which counts as 'played'
+const threshold = 0.6; // probability which counts as 'played'
 
 // These are sent from the main thread
 let   hzPerBin = NaN;
@@ -40,8 +40,9 @@ let bufferTotal = 0;
 let frame = 0;
 
 // Conditional probabilities
-function condProb(on, idx, max, total) {
+function condProb(on, idx, max, total, maxIdx) {
   const lambda = 1; // This is a tweak-able parameter
+  const m = 5; // This is a tweak-able parameter
   const pow = buffer[idx];
   const avg = total / buffer.length;
   const localMax = Math.max(
@@ -54,6 +55,8 @@ function condProb(on, idx, max, total) {
     prob *= lambda * Math.exp(-lambda*(max-pow)/avg);
     // Local max is more likely
     prob *= lambda * Math.exp(-lambda*Math.abs(localMax - pow));
+    // Notes should be somewhat proximate to loudest note
+    prob *= lambda*0.5 * Math.exp(-lambda*0.5*Math.abs(maxIdx-idx)/m);
   } else {
     // Higher power is less likely
     prob *= lambda * Math.exp(-lambda*pow/avg);
@@ -62,6 +65,12 @@ function condProb(on, idx, max, total) {
       prob *= lambda;
     } else {
       prob *= lambda * Math.exp(-lambda/Math.abs(localMax - pow));
+    }
+    // Notes far away from global maximum are less likely
+    if (maxIdx === idx) {
+      prob *= lambda*0.5;
+    } else {
+      prob *= lambda*0.5 * Math.exp(-lambda*0.5*m/Math.abs(maxIdx-idx));
     }
   }
   return prob;
@@ -72,9 +81,13 @@ function analyze({data}) {
   // Copy into our buffer and collect overall stats
   let max = 0;
   let total = 0;
+  let maxIdx = 0;
   for (let i = 0; i < notes.length; i ++) {
     const v = data[notes[i]];
-    max = Math.max(max, v);
+    if (max < v) {
+      max = v;
+      maxIdx = i;
+    }
     total += v;
     buffer[i] = v;
   }
@@ -86,8 +99,8 @@ function analyze({data}) {
   if (frame > 0 || total > bufferTotal * 2) {
     // Propagate probabilities
     for (let i = 0; i < prob.length; i ++) {
-      const on = prob[i] * condProb(true, i, max, total);
-      const off = (1-prob[i]) * condProb(false, i, max, total);
+      const on = prob[i] * condProb(true, i, max, total, maxIdx);
+      const off = (1-prob[i]) * condProb(false, i, max, total, maxIdx);
       // Bayes step
       prob[i] = on / (on + off);
     }
