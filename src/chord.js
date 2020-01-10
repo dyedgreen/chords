@@ -18,17 +18,17 @@ export class Chord {
   }
 
   // Return human readable name of chord
+  // as html
   get name() {
-    return "TODO!";
-    // if (this.key) {
-    //   let name = "CDEFGAB"[this._names[0]];
-    //   if (this._modifiers[0] === +1)
-    //     name = "#" + name;
-    //   if (this._modifiers[0] === -1)
-    //     name = "b" + name;
-    //   return `${name} ${this.key}`;
-    // }
-    // return this.notes.join(", ");
+    const letters = "CDEFGAB";
+    const mods = [String.fromCharCode(9837), "", String.fromCharCode(9839)];
+    const note = idx => `${letters[this.names[idx]]}${mods[1+this.modifiers[idx]]}<sub>${this.octaves[idx]}</sub>`;
+    if (this.key)
+      return `${note(0)} ${this.key}`;
+    const names = [];
+    for (let i = 0; i < this.names.length; i ++)
+      names.push(note(i));
+    return names.join(", ");
   }
 
   // Render an SVG of the chord
@@ -79,7 +79,18 @@ export class Chord {
     let staffLen = 100;
     if (maxY-minY > 20)
       staffLen = maxY-minY + 80;
-    fragments.push(`<path d="M169,${193 + maxY} L169,${193 + maxY - staffLen}" id="staff" stroke="#000000" stroke-width="2"></path>`);
+    let staffBot = 193;
+    let staffTop = 193;
+    if (193 + maxY < staffLen) {
+      // Staff goes down
+      staffBot += minY + staffLen;
+      staffTop += minY;
+    } else {
+      // Staff goes up
+      staffBot += maxY;
+      staffTop += maxY - staffLen;
+    }
+    fragments.push(`<path d="M169,${staffBot} L169,${staffTop}" id="staff" stroke="#000000" stroke-width="2"></path>`);
 
     // Extra lines for low/ high notes
     if (maxY > 60) {

@@ -3,7 +3,7 @@
 console.log("Audio worker started");
 
 const minNote = -15; // smallest note we are happy to recognize
-const maxNote = 88-5*12; // highest key on piano
+const maxNote = 20; // highest note we like to render
 const bufferSize = 3; // # of frames in a detection buffer
 
 const threshold = 0.6; // probability which counts as 'played'
@@ -42,7 +42,7 @@ let frame = 0;
 // Conditional probabilities
 function condProb(on, idx, max, total, maxIdx) {
   const lambda = 1; // This is a tweak-able parameter
-  const m = 5; // This is a tweak-able parameter
+  const m = 4; // This is a tweak-able parameter
   const pow = buffer[idx];
   const avg = total / buffer.length;
   const localMax = Math.max(
