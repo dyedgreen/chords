@@ -1,6 +1,6 @@
 :root {
   --color-dark: #011C27;
-  --color-grey: #485254;
+  --color-gray: #485254;
   --color-bg: #EFF6F9;
   --color-bg-dark: #e3e8ea;
   --color-main: #0AD1BD;
@@ -67,6 +67,7 @@ a {
   border-radius: 5px;
   background: var(--color-bg);
   box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
 .view .card.full {
   width: 800px;
@@ -98,6 +99,10 @@ a {
   margin: 15px 0;
   font-size: 20px;
   font-weight: 500;
+}
+
+.view .card #waves {
+  margin: -100px 0 -30px -25px;
 }
 
 /* global bg */

@@ -1,4 +1,5 @@
 import { AudioAnalyzer } from "./audio.js";
+import { render } from "./wave.js";
 
 const chordRender = document.getElementById("chord-render");
 const chordInfo = document.getElementById("chord-info");
@@ -7,6 +8,8 @@ const viewStart = document.getElementById("view-start");
 const viewError = document.getElementById("view-error");
 const viewChord = document.getElementById("view-chord");
 const viewHelp = document.getElementById("view-help");
+
+const volumeIndicator = document.getElementById("waves");
 
 document.getElementById("btn-start").addEventListener("click", () => {
   AudioAnalyzer.open()
@@ -19,6 +22,9 @@ document.getElementById("btn-start").addEventListener("click", () => {
       chordRender.innerHTML = chord.svg();
       chordInfo.innerHTML = chord.name;
     };
+    analyzer.onpower = power => {
+      nPower = power;
+    };
   })
   .catch(() => {
     // Access rejected or no audio input available
@@ -30,3 +36,20 @@ document.getElementById("btn-start").addEventListener("click", () => {
 document.getElementById("btn-help").addEventListener("click", () => {
   viewHelp.classList.toggle("hidden");
 });
+
+// Volume animation
+let nPower = 0;
+let cPower = 0;
+
+volumeIndicator.height = 100;
+const volumeCtx = volumeIndicator.getContext("2d");
+
+function animateVolume() {
+  volumeIndicator.width = viewChord.offsetWidth;
+  // Interpolate power
+  cPower = (cPower*1.5 + nPower*0.5) / 2;
+  // Render wave
+  render(volumeIndicator.width, 100, volumeCtx, cPower, Date.now());
+  window.requestAnimationFrame(animateVolume);
+};
+animateVolume();

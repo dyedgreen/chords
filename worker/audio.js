@@ -91,6 +91,7 @@ function analyze({data}) {
     total += v;
     buffer[i] = v;
   }
+  // DEBUG: delete me
   console.log(frame, max, total, total > bufferTotal * 2);
   // We start analyzing the frames if the total power doubles and
   // no analysis is currently ongoing
@@ -114,6 +115,8 @@ function analyze({data}) {
   // Update global state
   bufferMax = max;
   bufferTotal = total;
+  // Send power
+  postMessage(total);
 }
 
 // Send data to main thread
@@ -123,8 +126,6 @@ function send() {
     if (prob[i] > threshold)
       result.push(minNote + i);
   }
-  // DEBUG: Delete
-  console.log(result);
   if (result.length > 0)
     postMessage(result);
 }

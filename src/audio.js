@@ -14,9 +14,12 @@ export class AudioAnalyzer {
     this._context = context;
     this._worker = worker;
     this._worker.onmessage = ({data}) => {
-      // Silently drop chords if no handler is attached
-      if (typeof this.onchord === "function")
+      // Silently drops messages if no handler is attached
+      if (Array.isArray(data) && typeof this.onchord === "function") {
         this.onchord(new Chord(data));
+      } else if (typeof this.onpower === "function") {
+        this.onpower(data);
+      }
     };
   }
 
