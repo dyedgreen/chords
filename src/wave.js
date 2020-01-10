@@ -1,7 +1,5 @@
 // Draw a volume indicator wave
 export function render(w, h, ctx, power, t) {
-  if (power === 0)
-    return;
   const c = w / 2;
   const n = 40;
   const max = power > 1000 ? 1 : power / 1000;
