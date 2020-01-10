@@ -6,7 +6,7 @@ export function render(w, h, ctx, power, t) {
 
   // Render waves
   const step = w / n;
-  const colors = ["rgba(3, 57, 52, 0.5)", "rgba(10, 209, 189, 0.5)"];
+  const colors = ["rgba(3,57,52,0.5)", "rgba(10,209,189,0.5)"];
 
   for (let i = 0; i < colors.length; i ++) {
     ctx.beginPath();

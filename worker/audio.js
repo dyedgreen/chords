@@ -91,12 +91,13 @@ function analyze({data}) {
     total += v;
     buffer[i] = v;
   }
-  // DEBUG: delete me
-  console.log(frame, max, total, total > bufferTotal * 2);
   // We start analyzing the frames if the total power doubles and
   // no analysis is currently ongoing
-  if (frame === 0 && total > bufferTotal * 2)
+  if (total > bufferTotal * 2) {
+    // This will override an 'early start'
+    frame = 0;
     prob.fill(0.5);
+  }
   if (frame > 0 || total > bufferTotal * 2) {
     // Propagate probabilities
     for (let i = 0; i < prob.length; i ++) {

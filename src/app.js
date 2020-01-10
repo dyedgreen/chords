@@ -49,7 +49,8 @@ function animateVolume() {
   // Interpolate power
   cPower = (cPower*1.5 + nPower*0.5) / 2;
   // Render wave
-  render(volumeIndicator.width, 100, volumeCtx, cPower, Date.now());
+  if (cPower > 1e-5)
+    render(volumeIndicator.width, 100, volumeCtx, cPower, Date.now());
   window.requestAnimationFrame(animateVolume);
 };
 animateVolume();

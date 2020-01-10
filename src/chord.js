@@ -101,7 +101,7 @@ export class Chord {
       }
     }
 
-    if (minY < -60) {
+    if (minY < -90) {
       const n = Math.floor((-60 - minY) / 30);
       for (let i = 0; i < n; i ++) {
         const y = 90 - i * 30;
