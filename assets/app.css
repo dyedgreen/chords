@@ -38,6 +38,7 @@ a {
   font-size: 40px;
   font-weight: 700;
   text-transform: uppercase;
+  line-height: 45px;
   color: var(--color-dark);
 }
 .header .logo img {
@@ -84,7 +85,7 @@ a {
 
 .view .card .hero {
   display: block;
-  width: 150px;
+  height: 150px;
   margin: 0 auto;
 }
 
@@ -97,16 +98,31 @@ a {
   max-width: 100%;
 }
 
-.view .card h1 {
+.view .card h1, h2 {
   margin: 15px 0;
   font-size: 30px;
   font-weight: 800;
 }
 
-.view .card p {
+.view .card h2 {
+  font-size: 22px;
+}
+
+.view .card p, li {
   margin: 15px 0;
   font-size: 20px;
   font-weight: 500;
+  line-height: 22px;
+}
+
+.view .card li {
+  margin-left: 25px;
+}
+.view .card ul li {
+  list-style: circle;
+}
+.view .card ol li {
+  list-style: decimal;
 }
 
 .view .card #waves {

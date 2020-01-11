@@ -6,7 +6,7 @@ const minNote = -15; // smallest note we are happy to recognize
 const maxNote = 20; // highest note we like to render
 const bufferSize = 3; // # of frames in a detection buffer
 
-const threshold = 0.6; // probability which counts as 'played'
+const threshold = 0.8; // probability which counts as 'played'
 
 // These are sent from the main thread
 let   hzPerBin = NaN;
@@ -35,7 +35,6 @@ onmessage = function({data}) {
 };
 
 // Analysis state
-let bufferMax = 0;
 let bufferTotal = 0;
 let frame = 0;
 
@@ -91,10 +90,9 @@ function analyze({data}) {
     total += v;
     buffer[i] = v;
   }
-  // We start analyzing the frames if the total power doubles and
-  // no analysis is currently ongoing
+  // We start analyzing the frames if the total power doubles.
+  // This will override an 'early start'.
   if (total > bufferTotal * 2) {
-    // This will override an 'early start'
     frame = 0;
     prob.fill(0.5);
   }
@@ -114,7 +112,6 @@ function analyze({data}) {
     }
   }
   // Update global state
-  bufferMax = max;
   bufferTotal = total;
   // Send power
   postMessage(total);
