@@ -18,9 +18,47 @@
       <div id="view-help" class="card full hidden">
         <img class="hero" src="./assets/piano.svg">
         <h1>Help</h1>
-        <p>Write some stuff here.</p>
+        <p>
+          To start recognizing chords, allow access to the microphone. Chords has the following
+          limitations:
+          <ul>
+            <li>works best in a quiet space</li>
+            <li>works best with instruments that produces clear harmonics with few overtones</li>
+            <li>is limited to the range between F&#9839;<sub>3</sub> and E<sub>6</sub></li>
+          </ul>
+        </p>
         <h1>About</h1>
-        <p>Write some stuff here.</p>
+        <p>
+          Chords recognizes musical notes present in played audio. It runs on most modern desktop
+          and mobile browsers.
+        </p>
+        <h2>Algorithm</h2>
+        <p>
+          To recognize notes, the following process is used:
+          <ol>
+            <li>The audio input is split into 4096 sample wide chunks.</li>
+            <li>
+              Every <sup>1</sup>/<sub>10</sub> second, this buffer is transformed to a power spectrum
+              in frequency space using a <a href="https://en.wikipedia.org/wiki/Fast_Fourier_transform">
+              fast Fourier Transform</a>. Frequencies that do not correspond to musical notes are discarded.
+            </li>
+            <li>
+              A new analysis series is started whenever the total power in the spectrum more than doubles
+              between consecutive spectra.
+            </li>
+            <li>
+              Whenever an analysis series is started, a <a href="https://en.wikipedia.org/wiki/Recursive_Bayesian_estimation">
+              Bayes Filter</a> is used consecutively to determine which of the notes in the spectrum
+              are being played and which are overtones or noise. (See
+              <a href="https://github.com/dyedgreen/chords/blob/master/analysis/Analysis.ipynb">here</a>
+              for a Jupyter Notebook with examples.)
+            </li>
+          </ol>
+        </p>
+        <p>
+          <img class="figure" src="./assets/spectrum.jpg">
+          <center>Example Spectrum showing a C<sub>4</sub> major. The cord is highlighted in red.</center>
+        </p>
         <h1>Credits</h1>
         <p>
           Chords is made by <a href="https://tilman.xyz">Tilman Roeder</a> for the

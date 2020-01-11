@@ -125,6 +125,14 @@ a {
   list-style: decimal;
 }
 
+.view .card .figure {
+  max-height: 300px;
+  max-width: 100%;
+  display: block;
+  margin: 15px auto;
+  border-radius: 5px;
+}
+
 .view .card #waves {
   margin: -100px 0 -30px -25px;
 }
