@@ -5,8 +5,7 @@ import { Chord } from "./chord.js";
 //
 // Event handlers:
 // onchord -> receives Chord objects found in audio
-// onpower -> TODO: will receive total power of audio slices
-//              to power animations of some description
+// onpower -> receives total power of audio slices
 export class AudioAnalyzer {
 
   // Do not construct manually
