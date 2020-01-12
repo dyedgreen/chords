@@ -1,0 +1,2 @@
+# Ignore Jupyter Notebook in language breakdown (as it contains images, which massively inflates it's size)
+analysis/** linguist-vendored
