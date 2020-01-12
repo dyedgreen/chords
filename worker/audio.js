@@ -10,7 +10,6 @@ const threshold = 0.8; // probability which counts as 'played'
 
 // These are sent from the main thread
 let   hzPerBin = NaN;
-let   frequencyBinCount = NaN;
 
 const notes = new Uint8Array(maxNote-minNote);
 const buffer = new Uint8Array(maxNote-minNote);
@@ -26,7 +25,6 @@ function noteIndex(n) {
 onmessage = function({data}) {
   // Load settings
   hzPerBin = data.hzPerBin;
-  frequencyBinCount = data.frequencyBinCount;
   // Generate notes
   for (let n = minNote, i = 0; n < maxNote; n++, i ++)
     notes[i] = noteIndex(n);
@@ -44,9 +42,9 @@ function condProb(on, idx, max, total, maxIdx) {
   const m = 4; // This is a tweak-able parameter
   const pow = buffer[idx];
   const avg = total / buffer.length;
-  const localMax = Math.max(
-    ...buffer.slice(Math.max(0, idx-1), Math.min(idx+2, buffer.length))
-  );
+  let localMax = 0;
+  for (let i = Math.max(0, idx-1), cap = Math.min(idx+2, buffer.length); i < cap; i ++)
+    localMax = Math.max(localMax, buffer[i]);
 
   let prob = 1;
   if (on === true) {

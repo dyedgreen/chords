@@ -4,7 +4,7 @@ export class Chord {
   // Build a chord from a series of 'raw' data
   constructor(raw) {
     // {raw, key, names, modifiers, octaves}
-    this.raw = raw;
+    this.raw = filterOvertones(raw);
     this.raw.sort((a, b) => a-b);
     const { key, names, modifiers, octaves } = processRaw(this.raw);
     this.key = key;
@@ -130,6 +130,25 @@ export class Chord {
       </svg>`;
   }
 
+}
+
+// Filter overtones
+// Remove overtones using simple
+// heuristic: more than 3 notes
+// means we cut repeated notes
+function filterOvertones(raw) {
+  if (raw.length <= 3)
+    return raw;
+  const seen = new Array(12);
+  const res = [];
+  for (let i = 0; i < raw.length; i ++) {
+    const n = (120 + raw[i]) % 12;
+    if (seen[n])
+      continue;
+    res.push(raw[i]);
+    seen[n] = true;
+  }
+  return res;
 }
 
 // Mapping from note half-tone
