@@ -22,12 +22,17 @@ export class Chord {
   get name() {
     const letters = "CDEFGAB";
     const mods = [String.fromCharCode(9837), "", String.fromCharCode(9839)];
-    const note = idx => `${letters[this.names[idx]]}${mods[1+this.modifiers[idx]]}<sub>${this.octaves[idx]}</sub>`;
-    if (this.key)
-      return `${note(0)} ${this.key}`;
+    if (this.key) {
+      let name = `${letters[this.key.base.name]}${mods[1+this.key.base.modifier]}<sub>${this.key.base.octave}</sub> ${this.key.type}`;
+      if (this.key.inversion > 0) {
+        name += this.key.inversion === 1 ? " (1<sup>st</sup>" : " (2<sup>nd</sup>";
+        name += " inversion)";
+      }
+      return name;
+    }
     const names = [];
     for (let i = 0; i < this.names.length; i ++)
-      names.push(note(i));
+      names.push(`${letters[this.names[i]]}${mods[1+this.modifiers[i]]}<sub>${this.octaves[i]}</sub>`);
     return names.join(", ");
   }
 
@@ -182,16 +187,6 @@ function processRaw(raw) {
   const octaves   = new Array(raw.length); // Octaves for each note
   let   key       = null;
 
-  // Determine key
-  if (raw.length === 3) {
-    // TODO: Add more (fancy) keys here ...
-    // TODO: Recognize keys which might be in incorrect order ...
-    if (raw[1] - raw[0] === 4 && raw[2] - raw[1] === 3)
-      key = "major";
-    if (raw[1] - raw[0] === 3 && raw[2] - raw[1] === 4)
-      key = "minor";
-  }
-
   // Take raw n and return octave
   const getOct = n => {
     const m = n - offset;
@@ -222,6 +217,33 @@ function processRaw(raw) {
       }
     }
     octaves[i] = getOct(raw[i]);
+  }
+
+  // Determine key (accounts for inversions)
+  if (raw.length === 3) {
+    for (let inversion = 0; inversion < 3; inversion ++) {
+      const first  = raw[(3 - inversion + 0) % 3] + (inversion > 0 ? -12 : 0);
+      const second = raw[(3 - inversion + 1) % 3] + (inversion > 1 ? -12 : 0);
+      const third  = raw[(3 - inversion + 2) % 3];
+      let type = null;
+      if (second - first === 4 && third - second === 3)
+        type = "major";
+      if (second - first === 3 && third - second === 4)
+        type = "minor";
+      if (type !== null) {
+        const baseIdx = (3 - inversion + 0) % 3;
+        key = {
+          type,
+          inversion,
+          base: {
+            name: names[baseIdx],
+            modifier: modifiers[baseIdx],
+            octave: octaves[baseIdx] - (inversion > 0 ? 1 : 0),
+          },
+        };
+        break;
+      }
+    }
   }
 
   return { key, names, modifiers, octaves };
